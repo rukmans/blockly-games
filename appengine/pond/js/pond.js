@@ -93,6 +93,17 @@ Pond.docsButtonClick = function() {
   BlocklyDialogs.matchBorder_(dialog, true, 0.8);
   // In 175ms show the dialog and hide the animated border.
   setTimeout(endResult, 175);
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: Documentation Opened, Time: " + hours + ":" + minutes + ":" + seconds);
+
 };
 
 /**
@@ -112,6 +123,16 @@ Pond.docsCloseClick = function() {
   // In 175ms hide the animated border.
   setTimeout(endResult, 175);
   dialog.style.visibility = 'hidden';
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: Documentation Closed, Time: " + hours + ":" + minutes + ":" + seconds);
 };
 
 /**
@@ -131,6 +152,17 @@ Pond.runButtonClick = function(e) {
   }
   runButton.style.display = 'none';
   resetButton.style.display = 'inline';
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: Run Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
+
   Pond.execute();
 };
 
@@ -146,6 +178,17 @@ Pond.resetButtonClick = function(e) {
   var runButton = document.getElementById('runButton');
   runButton.style.display = 'inline';
   document.getElementById('resetButton').style.display = 'none';
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: Reset Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
+
   Pond.reset();
 };
 
