@@ -142,9 +142,15 @@ BlocklyStorage.handleRequest_ = function() {
 BlocklyStorage.monitorChanges_ = function() {
   var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
   var startXmlText = Blockly.Xml.domToText(startXmlDom);
+
+  console.log(startXmlText);
+
   function change() {
     var xmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
     var xmlText = Blockly.Xml.domToText(xmlDom);
+
+
+
     if (startXmlText != xmlText) {
       window.location.hash = '';
       Blockly.removeChangeListener(bindData);

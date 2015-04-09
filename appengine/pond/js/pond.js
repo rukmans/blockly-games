@@ -162,7 +162,10 @@ Pond.runButtonClick = function(e) {
   minutes = "0" + minutes;
 
   console.log("Action: Run Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
+  var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
+  var startXmlText = Blockly.Xml.domToText(startXmlDom);
 
+  console.log(startXmlText);
   Pond.execute();
 };
 
