@@ -165,6 +165,9 @@ Pond.runButtonClick = function(e) {
   var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
   var startXmlText = Blockly.Xml.domToText(startXmlDom);
 
+  var opened = window.open("");
+  opened.document.write("<html><head><title>Measuring Skills</title></head><body>Testing</body></html>");
+
   console.log(startXmlText);
   Pond.execute();
 };
