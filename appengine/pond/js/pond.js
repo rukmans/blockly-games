@@ -43,6 +43,7 @@ var currentIndex = 0;         //Used to point to localStorage index
 var workspaceIndex = null;    //Current index used to store workspace
 var timestampIndex = null;    //Current index used to store time stamps
 var resultView = null;        //The windows used to show results
+var reportView = null;        //The window used to show formatted HTML table
 var currentIndexKey = 'currentIndex'; //Used as key to store and retrieve current index in localStorage
 
 /**
@@ -58,6 +59,7 @@ Pond.init = function() {
   BlocklyGames.bindClick('closeDocs', Pond.docsCloseClick);
   BlocklyGames.bindClick('clearButton', Pond.clearButtonClick);
   BlocklyGames.bindClick('exportButton', Pond.exportButtonClick);
+  BlocklyGames.bindClick('reportButton', Pond.reportButtonClick);
 
   // Lazy-load the JavaScript interpreter.
   setTimeout(BlocklyInterface.importInterpreter, 1);
@@ -151,6 +153,91 @@ Pond.clearButtonClick = function() {
   console.log('local storage cleared!');
   currentIndex = 1;
 }
+
+/**
+* Export the locally stored results as formatted HTML table
+*/
+Pond.reportButtonClick = function() {
+  console.log('Exporting locally stored results as an HTML table.');
+  reportView = window.open("");
+  reportView.document.write("<html><head><title>Measuring Skills, CTL, CSL, VT</title></head><body><div id=\"results\"></div></body></html>");
+  //reportView.document.getElementById("results").innerHTML = startXmlText;
+
+  var table = reportView.document.createElement("table");
+  table.style.border = '1em solid brown';
+  
+  var header = table.createTHead();
+  var headerRow = header.insertRow(0);
+  var c1 = headerRow.insertCell(0);
+  c1.innerHTML = "<b>Time Stamp</b>";
+  var c2 = headerRow.insertCell(1);
+  c2.innerHTML = "<b>Semantic Interaction</b>";
+  var c3 = headerRow.insertCell(2);
+  c3.innerHTML = "<b>Workspace State</b>";
+  headerRow.style.backgroundColor = "F8E0E6";
+
+
+  var tableBody = reportView.document.createElement("tbody");
+  table.appendChild(tableBody);
+  reportView.document.body.appendChild(table);
+
+  
+
+  for(var i = 1; i < currentIndex; i++) {
+    var row = reportView.document.createElement("tr");
+    var index = "timestamp"+i.toString();
+    var rec = localStorage.getItem(index);
+    console.log(rec.toString());
+
+    if(i%2==0){
+      row.style.backgroundColor = "F3E6C7";
+    }
+    else
+    {
+      row.style.backgroundColor = "FBF2EF";
+    }
+
+    var items = rec.split("::");
+    if(items.length == 3)
+    {
+      var cell = reportView.document.createElement("td");
+      var cellText = reportView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+      var actionCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      var stateCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[2].toString());
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+    if(items.length == 2)
+    {
+      var cell = reportView.document.createElement("td");
+      var cellText = reportView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+      var actionCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      var stateCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode("NULL");
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+
+    tableBody.appendChild(row);
+
+  }
+
+  reportView.document.getElementById("results").appendChild(table);
+}
+
 
 /**
 * Export the locally stored results as an HTML table
