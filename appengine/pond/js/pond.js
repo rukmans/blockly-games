@@ -37,6 +37,14 @@ goog.require('goog.math.Coordinate');
  */
 Pond.endBattle = null;
 
+var firstRun = true;
+var storageSupported = false; //Used to store support for HTML5 storage
+var currentIndex = 0;         //Used to point to localStorage index
+var workspaceIndex = null;    //Current index used to store workspace
+var timestampIndex = null;    //Current index used to store time stamps
+var resultView = null;        //The windows used to show results
+var currentIndexKey = 'currentIndex'; //Used as key to store and retrieve current index in localStorage
+
 /**
  * Initialize the pond.  Called on page load.
  */
@@ -48,6 +56,8 @@ Pond.init = function() {
   BlocklyGames.bindClick('resetButton', Pond.resetButtonClick);
   BlocklyGames.bindClick('docsButton', Pond.docsButtonClick);
   BlocklyGames.bindClick('closeDocs', Pond.docsCloseClick);
+  BlocklyGames.bindClick('clearButton', Pond.clearButtonClick);
+  BlocklyGames.bindClick('exportButton', Pond.exportButtonClick);
 
   // Lazy-load the JavaScript interpreter.
   setTimeout(BlocklyInterface.importInterpreter, 1);
@@ -60,6 +70,24 @@ Pond.init = function() {
                                          BlocklyGames.LEVEL)) {
     setTimeout(Pond.showHelp, 1000);
   }
+
+  if('localStorage' in window && window['localStorage'] !== null)
+  {
+    storageSupported = true;
+    currentIndex = localStorage.getItem(currentIndexKey);
+    if(currentIndex !== null)
+      console.log('Index retrieved: ' + currentIndex.toString());
+    else
+    {
+      currentIndex = 1;
+      console.log('Index not found, initializing to 1');
+      localStorage.setItem(currentIndexKey, currentIndex);
+    }
+  }
+  else
+    alert("HTML5 Storage not supported in your browser, Semantic Interactions will not be saved!");
+
+
 };
 
 /**
@@ -106,6 +134,89 @@ Pond.docsButtonClick = function() {
 
 };
 
+
+/**
+* Clear the local storage
+*/
+Pond.clearButtonClick = function() {
+
+  if(!storageSupported)
+  {
+    alert('Your browser does not support local storage, nothing to clear!');
+    return;
+  }
+
+  console.log('Starting to clear localStorage!');
+  localStorage.clear();
+  console.log('local storage cleared!');
+  currentIndex = 1;
+}
+
+/**
+* Export the locally stored results as an HTML table
+*/
+Pond.exportButtonClick = function() {
+  console.log('Exporting locally stored results as an HTML table.');
+  resultView = window.open("");
+  resultView.document.write("<html><head><title>Measuring Skills, CTL, CSL, VT</title></head><body><div id=\"results\"></div></body></html>");
+  //resultView.document.getElementById("results").innerHTML = startXmlText;
+
+  var table = resultView.document.createElement("table");
+  var tableBody = resultView.document.createElement("tbody");
+  table.appendChild(tableBody);
+  resultView.document.body.appendChild(table);
+
+  
+
+  for(var i = 1; i < currentIndex; i++) {
+    var row = resultView.document.createElement("tr");
+    var index = "timestamp"+i.toString();
+    var rec = localStorage.getItem(index);
+    console.log(rec.toString());
+
+    var items = rec.split("::");
+    if(items.length == 3)
+    {
+      var cell = resultView.document.createElement("td");
+      var cellText = resultView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+      var actionCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      var stateCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[2].toString());
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+    if(items.length == 2)
+    {
+      var cell = resultView.document.createElement("td");
+      var cellText = resultView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+      var actionCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      var stateCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode("NULL");
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+
+    tableBody.appendChild(row);
+
+  }
+
+  resultView.document.getElementById("results").appendChild(table);
+}
+
+
+
 /**
  * Close the documentation frame.
  */
@@ -133,6 +244,33 @@ Pond.docsCloseClick = function() {
   minutes = "0" + minutes;
 
   console.log("Action: Documentation Closed, Time: " + hours + ":" + minutes + ":" + seconds);
+
+  if(storageSupported)
+  {
+    try{
+    //  workspaceIndex = "workspace"+currentIndex.toString();
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing Documentation Opened to local Storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + "Documentation";
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
 };
 
 /**
@@ -161,16 +299,71 @@ Pond.runButtonClick = function(e) {
   if (minutes < 10)
   minutes = "0" + minutes;
 
-  console.log("Action: Run Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
-  var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
-  var startXmlText = Blockly.Xml.domToText(startXmlDom);
+  if(firstRun)
+  {
 
-  var opened = window.open("");
-  opened.document.write("<html><head><title>Measuring Skills</title></head><body>Testing</body></html>");
 
-  console.log(startXmlText);
+    console.log("Action: Run Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
+    console.log("Timestamp: " + currentTime.toString());
+    var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
+    var startXmlText = Blockly.Xml.domToText(startXmlDom);
+
+/*
+    resultView = window.open("");
+    resultView.document.write("<html><head><title>Measuring Skills</title></head><body><div id=\"results\">Testing</div></body></html>");
+
+    resultView.document.getElementById("results").innerHTML = startXmlText;
+*/
+    console.log(startXmlText);
+    
+    firstRun = false;
+  }
+  else
+  {
+    console.log("--------------------------------------------");
+    var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
+    var startXmlText = Blockly.Xml.domToText(startXmlDom);
+    
+    /*resultView.document.getElementById("results").innerHTML = startXmlText;
+    console.log(resultView.document.getElementById("results").innerHTML);
+    */
+  }
+
+  
+
+  if(storageSupported)
+  {
+    try{
+    //  workspaceIndex = "workspace"+currentIndex.toString();
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing workspace state to local storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + "Run" +"::" + startXmlText;
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
+  
   Pond.execute();
 };
+
+
+
+
 
 /**
  * Click the reset button.  Reset the Pond.
@@ -194,6 +387,33 @@ Pond.resetButtonClick = function(e) {
   minutes = "0" + minutes;
 
   console.log("Action: Reset Button Pressed, Time: " + hours + ":" + minutes + ":" + seconds);
+
+  if(storageSupported)
+  {
+    try{
+    //  workspaceIndex = "workspace"+currentIndex.toString();
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing Documentation Opened to local Storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + "Reset";
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
 
   Pond.reset();
 };
