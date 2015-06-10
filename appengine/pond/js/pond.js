@@ -164,17 +164,21 @@ Pond.reportButtonClick = function() {
   //reportView.document.getElementById("results").innerHTML = startXmlText;
 
   var table = reportView.document.createElement("table");
-  table.style.border = '1em solid brown';
+  table.style.border = '1em solid #59323C';
   
   var header = table.createTHead();
   var headerRow = header.insertRow(0);
   var c1 = headerRow.insertCell(0);
-  c1.innerHTML = "<b>Time Stamp</b>";
+  c1.innerHTML = "<b>Level</b>";
   var c2 = headerRow.insertCell(1);
-  c2.innerHTML = "<b>Semantic Interaction</b>";
+  c2.innerHTML = "<b>Time Stamp</b>";
   var c3 = headerRow.insertCell(2);
-  c3.innerHTML = "<b>Workspace State</b>";
-  headerRow.style.backgroundColor = "F8E0E6";
+  c3.innerHTML = "<b>Semantic Interaction</b>";
+  var c4 = headerRow.insertCell(3);
+  c4.innerHTML = "<b>Workspace State</b>";
+  
+  headerRow.style.backgroundColor = "260126";
+  headerRow.style.color = "F2EEB3";
 
 
   var tableBody = reportView.document.createElement("tbody");
@@ -190,46 +194,63 @@ Pond.reportButtonClick = function() {
     console.log(rec.toString());
 
     if(i%2==0){
-      row.style.backgroundColor = "F3E6C7";
+      row.style.backgroundColor = "998C66";
+      row.style.color = "FEFEF8";
     }
     else
     {
-      row.style.backgroundColor = "FBF2EF";
+      row.style.backgroundColor = "8C6954";
+      row.style.color = "FEFEF8";
     }
 
     var items = rec.split("::");
-    if(items.length == 3)
+    if(items.length == 4)
     {
-      var cell = reportView.document.createElement("td");
+      var levelCell = reportView.document.createElement("td");
+      var levelText = reportView.document.createTextNode(items[3].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var timeCell = reportView.document.createElement("td");
       var cellText = reportView.document.createTextNode(items[0].toString());
-      cell.appendChild(cellText);
-      row.appendChild(cell);
+      timeCell.appendChild(cellText);
+      row.appendChild(timeCell);
+
       var actionCell = reportView.document.createElement("td");
       cellText = reportView.document.createTextNode(items[1].toString());
       actionCell.appendChild(cellText);
       row.appendChild(actionCell);
+      
       var stateCell = reportView.document.createElement("td");
       cellText = reportView.document.createTextNode(items[2].toString());
       stateCell.appendChild(cellText);
       row.appendChild(stateCell);
 
     }
-    if(items.length == 2)
+    if(items.length == 3)
     {
+      var levelCell = reportView.document.createElement("td");
+      var levelText = reportView.document.createTextNode(items[2].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
       var cell = reportView.document.createElement("td");
       var cellText = reportView.document.createTextNode(items[0].toString());
       cell.appendChild(cellText);
       row.appendChild(cell);
+
       var actionCell = reportView.document.createElement("td");
       cellText = reportView.document.createTextNode(items[1].toString());
       actionCell.appendChild(cellText);
       row.appendChild(actionCell);
+      
       var stateCell = reportView.document.createElement("td");
       cellText = reportView.document.createTextNode("NULL");
       stateCell.appendChild(cellText);
       row.appendChild(stateCell);
 
     }
+
 
     tableBody.appendChild(row);
 
@@ -262,32 +283,46 @@ Pond.exportButtonClick = function() {
     console.log(rec.toString());
 
     var items = rec.split("::");
-    if(items.length == 3)
+    if(items.length == 4)
     {
-      var cell = resultView.document.createElement("td");
+      var levelCell = resultView.document.createElement("td");
+      var levelText = resultView.document.createTextNode(items[3].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var timeCell = resultView.document.createElement("td");
       var cellText = resultView.document.createTextNode(items[0].toString());
-      cell.appendChild(cellText);
-      row.appendChild(cell);
+      timeCell.appendChild(cellText);
+      row.appendChild(timeCell);
+
       var actionCell = resultView.document.createElement("td");
       cellText = resultView.document.createTextNode(items[1].toString());
       actionCell.appendChild(cellText);
       row.appendChild(actionCell);
+      
       var stateCell = resultView.document.createElement("td");
       cellText = resultView.document.createTextNode(items[2].toString());
       stateCell.appendChild(cellText);
       row.appendChild(stateCell);
 
     }
-    if(items.length == 2)
+    if(items.length == 3)
     {
+      var levelCell = resultView.document.createElement("td");
+      var levelText = resultView.document.createTextNode(items[2].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
       var cell = resultView.document.createElement("td");
       var cellText = resultView.document.createTextNode(items[0].toString());
       cell.appendChild(cellText);
       row.appendChild(cell);
+
       var actionCell = resultView.document.createElement("td");
       cellText = resultView.document.createTextNode(items[1].toString());
       actionCell.appendChild(cellText);
       row.appendChild(actionCell);
+      
       var stateCell = resultView.document.createElement("td");
       cellText = resultView.document.createTextNode("NULL");
       stateCell.appendChild(cellText);
@@ -339,7 +374,7 @@ Pond.docsCloseClick = function() {
       timestampIndex = "timestamp"+currentIndex.toString();
       console.log("Writing Documentation Opened to local Storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
-      var record = currentTime.toString() + "::" + "Documentation";
+      var record = currentTime.toString() + "::" + "Documentation" + "::" + BlocklyGames.LEVEL.toString();
       localStorage.setItem(timestampIndex, record);
       currentIndex++;
       localStorage.setItem(currentIndexKey,currentIndex);
@@ -425,7 +460,8 @@ Pond.runButtonClick = function(e) {
       timestampIndex = "timestamp"+currentIndex.toString();
       console.log("Writing workspace state to local storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
-      var record = currentTime.toString() + "::" + "Run" +"::" + startXmlText;
+      var record = currentTime.toString() + "::" + "Run" +"::" + startXmlText + "::" + BlocklyGames.LEVEL.toString();
+      console.log("Record: " + record.toString());
       localStorage.setItem(timestampIndex, record);
       currentIndex++;
       localStorage.setItem(currentIndexKey,currentIndex);
@@ -436,6 +472,7 @@ Pond.runButtonClick = function(e) {
       }
       else
       {
+
         alert ('Unknown error occured trying to store semantic interactions!');
       }
     }
@@ -445,6 +482,8 @@ Pond.runButtonClick = function(e) {
     console.log('HTML5 Storage not supported, skipping writig worlspace state.');
   }
   
+  console.log("LEVEL: " + BlocklyGames.LEVEL.toString());
+
   Pond.execute();
 };
 
@@ -482,7 +521,7 @@ Pond.resetButtonClick = function(e) {
       timestampIndex = "timestamp"+currentIndex.toString();
       console.log("Writing Documentation Opened to local Storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
-      var record = currentTime.toString() + "::" + "Reset";
+      var record = currentTime.toString() + "::" + "Reset" + "::" + BlocklyGames.LEVEL.toString();
       localStorage.setItem(timestampIndex, record);
       currentIndex++;
       localStorage.setItem(currentIndexKey,currentIndex);
