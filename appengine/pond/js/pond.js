@@ -149,7 +149,14 @@ Pond.clearButtonClick = function() {
   }
 
   console.log('Starting to clear localStorage!');
-  localStorage.clear();
+
+  for(var i = 1; i<currentIndex; i++){
+    var index =  "timestamp"+i.toString();
+    localStorage.removeItem(index);
+    localStorage.setItem(currentIndexKey, 1);
+  }
+
+  //localStorage.clear();
   console.log('local storage cleared!');
   currentIndex = 1;
 }
