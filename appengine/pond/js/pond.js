@@ -526,7 +526,7 @@ Pond.resetButtonClick = function(e) {
     try{
     //  workspaceIndex = "workspace"+currentIndex.toString();
       timestampIndex = "timestamp"+currentIndex.toString();
-      console.log("Writing Documentation Opened to local Storage.");
+      console.log("Writing Reset Button Clicked to local Storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
       var record = currentTime.toString() + "::" + "Reset" + "::" + BlocklyGames.LEVEL.toString();
       localStorage.setItem(timestampIndex, record);
@@ -550,6 +550,48 @@ Pond.resetButtonClick = function(e) {
 
   Pond.reset();
 };
+
+Pond.recordAction = function(actionName) {
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+  var actionType = actionName;
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: " + actionType.toString()+", Time: " + hours + ":" + minutes + ":" + seconds);
+
+  if(storageSupported)
+  {
+    try{
+    //  workspaceIndex = "workspace"+currentIndex.toString();
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing " + actionType.toString() + " to local Storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + actionType.toString() + "::" + BlocklyGames.LEVEL.toString();
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
+
+}
 
 /**
  * Execute the users' code.  Heaven help us...
@@ -585,6 +627,11 @@ Pond.showHelp = function() {
     left: '25%',
     top: '5em'
   };
+
+ // console.log("Show Help called by -> "+ Pond.showHelp.caller.toString());
+
+ // Pond.recordAction("Help");
+
   BlocklyDialogs.showDialog(help, button, true, true, style,
       BlocklyDialogs.stopDialogKeyDown);
   BlocklyDialogs.startDialogKeyDown();
