@@ -628,9 +628,10 @@ Pond.showHelp = function() {
     top: '5em'
   };
 
- // console.log("Show Help called by -> "+ Pond.showHelp.caller.toString());
-
- // Pond.recordAction("Help");
+  //console.log("Show Help called by -> "+ Pond.showHelp.caller.toString());
+  var d = new Date();
+  console.log("Time stamp: " + d.toJSON().toString())
+  Pond.recordAction("Help");
 
   BlocklyDialogs.showDialog(help, button, true, true, style,
       BlocklyDialogs.stopDialogKeyDown);
