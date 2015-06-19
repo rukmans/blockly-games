@@ -73,6 +73,12 @@ Pond.init = function() {
     setTimeout(Pond.showHelp, 1000);
   }
 
+  Pond.initStorage();
+
+
+};
+
+Pond.initStorage = function() {
   if('localStorage' in window && window['localStorage'] !== null)
   {
     storageSupported = true;
@@ -88,9 +94,7 @@ Pond.init = function() {
   }
   else
     alert("HTML5 Storage not supported in your browser, Semantic Interactions will not be saved!");
-
-
-};
+}
 
 /**
  * Is the documentation open?
@@ -283,8 +287,6 @@ Pond.exportButtonClick = function() {
   table.appendChild(tableBody);
   resultView.document.body.appendChild(table);
 
-  
-
   for(var i = 1; i < currentIndex; i++) {
     var row = resultView.document.createElement("tr");
     var index = "timestamp"+i.toString();
@@ -390,44 +392,6 @@ Pond.runButtonClick = function(e) {
 
   var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
   var startXmlText = Blockly.Xml.domToText(startXmlDom);
-
- /** var currentTime = new Date();
-  var hours = currentTime.getHours();
-  var minutes = currentTime.getMinutes();
-  var seconds = currentTime.getSeconds();
-
-  if (minutes < 10)
-  minutes = "0" + minutes;
-
-  
-
-  if(storageSupported)
-  {
-    try{
-      timestampIndex = "timestamp"+currentIndex.toString();
-      console.log("Writing workspace state to local storage.");
-      var record = currentTime.toString() + "::" + "Run" +"::" + startXmlText + "::" + BlocklyGames.LEVEL.toString();
-      console.log("Record: " + record.toString());
-      localStorage.setItem(timestampIndex, record);
-      currentIndex++;
-      localStorage.setItem(currentIndexKey,currentIndex);
-    }
-    catch (e) {
-      if(e == 'QUOTA_EXCEEDED_ERR') {
-        alert ('Local storage quota exceeded trying to store semantic interactions!');
-      }
-      else
-      {
-
-        alert ('Unknown error occured trying to store semantic interactions!');
-      }
-    }
-  }
-  else
-  {
-    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
-  }
-  */
 
   Pond.recordWorkspaceAction("Run", startXmlText);
 

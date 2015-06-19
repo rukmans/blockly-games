@@ -34,6 +34,14 @@ goog.require('Blockly.FieldDropdown');
 
 BlocklyGames.NAME = 'maze';
 
+var storageSupported = false; //Used to store support for HTML5 storage
+var currentIndex = 0;         //Used to point to localStorage index
+var workspaceIndex = null;    //Current index used to store workspace
+var timestampIndex = null;    //Current index used to store time stamps
+var resultView = null;        //The windows used to show results
+var reportView = null;        //The window used to show formatted HTML table
+var currentIndexKey = 'currentIndex'; //Used as key to store and retrieve current index in localStorage
+
 /**
  * Go to the next level.
  */
@@ -547,6 +555,9 @@ Maze.init = function() {
 
   BlocklyGames.bindClick('runButton', Maze.runButtonClick);
   BlocklyGames.bindClick('resetButton', Maze.resetButtonClick);
+  BlocklyGames.bindClick('clearButton', Maze.clearButtonClick);
+  BlocklyGames.bindClick('exportButton', Maze.exportButtonClick);
+  BlocklyGames.bindClick('reportButton', Maze.reportButtonClick);
 
   if (BlocklyGames.LEVEL == 1) {
     // Make connecting blocks easier for beginners.
@@ -590,6 +601,9 @@ Maze.init = function() {
   setTimeout(BlocklyInterface.importInterpreter, 1);
   // Lazy-load the syntax-highlighting.
   setTimeout(BlocklyInterface.importPrettify, 1);
+
+  Maze.initStorage();
+
 };
 
 if (window.location.pathname.match(/readonly.html$/)) {
@@ -599,6 +613,220 @@ if (window.location.pathname.match(/readonly.html$/)) {
 } else {
   window.addEventListener('load', Maze.init);
 }
+
+Maze.initStorage = function() {
+  if('localStorage' in window && window['localStorage'] !== null)
+  {
+    storageSupported = true;
+    currentIndex = localStorage.getItem(currentIndexKey);
+    if(currentIndex !== null)
+      console.log('Index retrieved: ' + currentIndex.toString());
+    else
+    {
+      currentIndex = 1;
+      console.log('Index not found, initializing to 1');
+      localStorage.setItem(currentIndexKey, currentIndex);
+    }
+  }
+  else
+    alert("HTML5 Storage not supported in your browser, Semantic Interactions will not be saved!");
+}
+
+Maze.clearButtonClick = function() {
+  if(!storageSupported)
+  {
+    alert('Your browser does not support local storage, nothing to clear!');
+    return;
+  }
+
+  console.log('Starting to clear localStorage!');
+
+  for(var i = 1; i<currentIndex; i++){
+    var index =  "timestamp"+i.toString();
+    localStorage.removeItem(index);
+    localStorage.setItem(currentIndexKey, 1);
+  }
+
+  //localStorage.clear();
+  console.log('local storage cleared!');
+  currentIndex = 1;
+
+}
+
+Maze.exportButtonClick = function() {
+console.log('Exporting locally stored results as an HTML table.');
+  resultView = window.open("");
+  resultView.document.write("<html><head><title>Measuring Skills, CTL, CSL, VT</title></head><body><div id=\"results\"></div></body></html>");
+  //resultView.document.getElementById("results").innerHTML = startXmlText;
+
+  var table = resultView.document.createElement("table");
+  var tableBody = resultView.document.createElement("tbody");
+  table.appendChild(tableBody);
+  resultView.document.body.appendChild(table);
+
+  for(var i = 1; i < currentIndex; i++) {
+    var row = resultView.document.createElement("tr");
+    var index = "timestamp"+i.toString();
+    var rec = localStorage.getItem(index);
+    console.log(rec.toString());
+
+    var items = rec.split("::");
+    if(items.length == 4)
+    {
+      var levelCell = resultView.document.createElement("td");
+      var levelText = resultView.document.createTextNode(items[3].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var timeCell = resultView.document.createElement("td");
+      var cellText = resultView.document.createTextNode(items[0].toString());
+      timeCell.appendChild(cellText);
+      row.appendChild(timeCell);
+
+      var actionCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      
+      var stateCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[2].toString());
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+    if(items.length == 3)
+    {
+      var levelCell = resultView.document.createElement("td");
+      var levelText = resultView.document.createTextNode(items[2].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var cell = resultView.document.createElement("td");
+      var cellText = resultView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+
+      var actionCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      
+      var stateCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode("NULL");
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+
+    tableBody.appendChild(row);
+
+  }
+
+  resultView.document.getElementById("results").appendChild(table);
+}
+
+Maze.reportButtonClick = function() {
+console.log('Exporting locally stored results as an HTML table.');
+  reportView = window.open("");
+  reportView.document.write("<html><head><title>Measuring Skills, CTL, CSL, VT</title></head><body><div id=\"results\"></div></body></html>");
+  //reportView.document.getElementById("results").innerHTML = startXmlText;
+
+  var table = reportView.document.createElement("table");
+  table.style.border = '1em solid #59323C';
+  
+  var header = table.createTHead();
+  var headerRow = header.insertRow(0);
+  var c1 = headerRow.insertCell(0);
+  c1.innerHTML = "<b>Level</b>";
+  var c2 = headerRow.insertCell(1);
+  c2.innerHTML = "<b>Time Stamp</b>";
+  var c3 = headerRow.insertCell(2);
+  c3.innerHTML = "<b>Semantic Interaction</b>";
+  var c4 = headerRow.insertCell(3);
+  c4.innerHTML = "<b>Workspace State</b>";
+  
+  headerRow.style.backgroundColor = "260126";
+  headerRow.style.color = "F2EEB3";
+
+
+  var tableBody = reportView.document.createElement("tbody");
+  table.appendChild(tableBody);
+  reportView.document.body.appendChild(table);
+
+  
+
+  for(var i = 1; i < currentIndex; i++) {
+    var row = reportView.document.createElement("tr");
+    var index = "timestamp"+i.toString();
+    var rec = localStorage.getItem(index);
+    console.log(rec.toString());
+
+    if(i%2==0){
+      row.style.backgroundColor = "998C66";
+      row.style.color = "FEFEF8";
+    }
+    else
+    {
+      row.style.backgroundColor = "8C6954";
+      row.style.color = "FEFEF8";
+    }
+
+    var items = rec.split("::");
+    if(items.length == 4)
+    {
+      var levelCell = reportView.document.createElement("td");
+      var levelText = reportView.document.createTextNode(items[3].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var timeCell = reportView.document.createElement("td");
+      var cellText = reportView.document.createTextNode(items[0].toString());
+      timeCell.appendChild(cellText);
+      row.appendChild(timeCell);
+
+      var actionCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      
+      var stateCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[2].toString());
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+    if(items.length == 3)
+    {
+      var levelCell = reportView.document.createElement("td");
+      var levelText = reportView.document.createTextNode(items[2].toString());
+      levelCell.appendChild(levelText);
+      row.appendChild(levelCell);
+
+      var cell = reportView.document.createElement("td");
+      var cellText = reportView.document.createTextNode(items[0].toString());
+      cell.appendChild(cellText);
+      row.appendChild(cell);
+
+      var actionCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode(items[1].toString());
+      actionCell.appendChild(cellText);
+      row.appendChild(actionCell);
+      
+      var stateCell = reportView.document.createElement("td");
+      cellText = reportView.document.createTextNode("NULL");
+      stateCell.appendChild(cellText);
+      row.appendChild(stateCell);
+
+    }
+
+
+    tableBody.appendChild(row);
+
+  }
+
+  reportView.document.getElementById("results").appendChild(table);
+}
+
 
 /**
  * When the workspace changes, update the help as needed.
@@ -919,6 +1147,12 @@ Maze.runButtonClick = function(e) {
   resetButton.style.display = 'inline';
   Blockly.mainWorkspace.traceOn(true);
   Maze.reset(false);
+
+  var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
+  var startXmlText = Blockly.Xml.domToText(startXmlDom);
+
+  Maze.recordWorkspaceAction("Run", startXmlText);
+
   Maze.execute();
 };
 
@@ -971,6 +1205,11 @@ Maze.resetButtonClick = function(e) {
   Blockly.mainWorkspace.traceOn(false);
   Maze.reset(false);
   Maze.levelHelp();
+
+  var startXmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
+  var startXmlText = Blockly.Xml.domToText(startXmlDom);
+
+  Maze.recordWorkspaceAction("Reset", startXmlText);
 };
 
 /**
@@ -1529,3 +1768,87 @@ Maze.isPath = function(direction, id) {
 Maze.notDone = function() {
   return Maze.pegmanX != Maze.finish_.x || Maze.pegmanY != Maze.finish_.y;
 };
+
+Maze.recordAction = function(actionName) {
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+  var actionType = actionName;
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: " + actionType.toString()+", Time: " + hours + ":" + minutes + ":" + seconds);
+
+  if(storageSupported)
+  {
+    try{
+    //  workspaceIndex = "workspace"+currentIndex.toString();
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing " + actionType.toString() + " to local Storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + actionType.toString() + "::" + BlocklyGames.LEVEL.toString();
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
+
+}
+
+Maze.recordWorkspaceAction = function(actionName, workspaceXML) {
+
+  var currentTime = new Date();
+  var hours = currentTime.getHours();
+  var minutes = currentTime.getMinutes();
+  var seconds = currentTime.getSeconds();
+  var actionType = actionName;
+  var xmlString = workspaceXML;
+
+  if (minutes < 10)
+  minutes = "0" + minutes;
+
+  console.log("Action: " + actionType.toString()+", Time: " + hours + ":" + minutes + ":" + seconds);
+
+  if(storageSupported)
+  {
+    try{
+      timestampIndex = "timestamp"+currentIndex.toString();
+      console.log("Writing " + actionType.toString() + " to local Storage.");
+      //localStorage.setItem(workspaceIndex, startXmlText);
+      var record = currentTime.toString() + "::" + actionType.toString() + "::" + xmlString + "::" + BlocklyGames.LEVEL.toString();
+      localStorage.setItem(timestampIndex, record);
+      currentIndex++;
+      localStorage.setItem(currentIndexKey,currentIndex);
+    }
+    catch (e) {
+      if(e == 'QUOTA_EXCEEDED_ERR') {
+        alert ('Local storage quota exceeded trying to store semantic interactions!');
+      }
+      else
+      {
+        alert ('Unknown error occured trying to store semantic interactions!');
+      }
+    }
+  }
+  else
+  {
+    console.log('HTML5 Storage not supported, skipping writig worlspace state.');
+  }
+
+}
