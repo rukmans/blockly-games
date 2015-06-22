@@ -217,7 +217,7 @@ Pond.reportButtonClick = function() {
     }
 
     var items = rec.split("::");
-    if(items.length == 4)
+    if(items.length == 5)
     {
       var levelCell = reportView.document.createElement("td");
       var levelText = reportView.document.createTextNode(items[3].toString());
@@ -240,7 +240,7 @@ Pond.reportButtonClick = function() {
       row.appendChild(stateCell);
 
     }
-    if(items.length == 3)
+    if(items.length == 4)
     {
       var levelCell = reportView.document.createElement("td");
       var levelText = reportView.document.createTextNode(items[2].toString());
@@ -294,7 +294,7 @@ Pond.exportButtonClick = function() {
     console.log(rec.toString());
 
     var items = rec.split("::");
-    if(items.length == 4)
+    if(items.length == 5)
     {
       var levelCell = resultView.document.createElement("td");
       var levelText = resultView.document.createTextNode(items[3].toString());
@@ -316,8 +316,13 @@ Pond.exportButtonClick = function() {
       stateCell.appendChild(cellText);
       row.appendChild(stateCell);
 
+      var milliCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[4].toString());
+      milliCell.appendChild(cellText);
+      row.appendChild(milliCell);
+
     }
-    if(items.length == 3)
+    if(items.length == 4)
     {
       var levelCell = resultView.document.createElement("td");
       var levelText = resultView.document.createTextNode(items[2].toString());
@@ -338,6 +343,11 @@ Pond.exportButtonClick = function() {
       cellText = resultView.document.createTextNode("NULL");
       stateCell.appendChild(cellText);
       row.appendChild(stateCell);
+
+      var milliCell = resultView.document.createElement("td");
+      cellText = resultView.document.createTextNode(items[3].toString());
+      milliCell.appendChild(cellText);
+      row.appendChild(milliCell);
 
     }
 
@@ -423,9 +433,14 @@ Pond.resetButtonClick = function(e) {
 Pond.recordAction = function(actionName) {
 
   var currentTime = new Date();
+  var year = currentTime.getFullYear();
+  var month = currentTime.getMonth();
+  var day = currentTime.getDate();
   var hours = currentTime.getHours();
   var minutes = currentTime.getMinutes();
   var seconds = currentTime.getSeconds();
+  var millis = currentTime.getMilliseconds();
+  var utc = Date.UTC(year, month, day, hours, minutes, seconds, millis);
   var actionType = actionName;
 
   if (minutes < 10)
@@ -440,7 +455,7 @@ Pond.recordAction = function(actionName) {
       timestampIndex = "timestamp"+currentIndex.toString();
       console.log("Writing " + actionType.toString() + " to local Storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
-      var record = currentTime.toString() + "::" + actionType.toString() + "::" + BlocklyGames.LEVEL.toString();
+      var record = currentTime.toString() + "::" + actionType.toString() + "::" + BlocklyGames.LEVEL.toString() +"::" + utc.toString();
       localStorage.setItem(timestampIndex, record);
       currentIndex++;
       localStorage.setItem(currentIndexKey,currentIndex);
@@ -465,9 +480,14 @@ Pond.recordAction = function(actionName) {
 Pond.recordWorkspaceAction = function(actionName, workspaceXML) {
 
   var currentTime = new Date();
+  var year = currentTime.getFullYear();
+  var month = currentTime.getMonth();
+  var day = currentTime.getDate();
   var hours = currentTime.getHours();
   var minutes = currentTime.getMinutes();
   var seconds = currentTime.getSeconds();
+  var millis = currentTime.getMilliseconds();
+  var utc = Date.UTC(year, month, day, hours, minutes, seconds, millis);
   var actionType = actionName;
   var xmlString = workspaceXML;
 
@@ -483,7 +503,7 @@ Pond.recordWorkspaceAction = function(actionName, workspaceXML) {
       timestampIndex = "timestamp"+currentIndex.toString();
       console.log("Writing " + actionType.toString() + " to local Storage.");
       //localStorage.setItem(workspaceIndex, startXmlText);
-      var record = currentTime.toString() + "::" + actionType.toString() + "::" + xmlString + "::" + BlocklyGames.LEVEL.toString();
+      var record = currentTime.toString() + "::" + actionType.toString() + "::" + xmlString + "::" + BlocklyGames.LEVEL.toString() +"::" + utc.toString();
       localStorage.setItem(timestampIndex, record);
       currentIndex++;
       localStorage.setItem(currentIndexKey,currentIndex);
