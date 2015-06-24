@@ -136,5 +136,31 @@ Index.clearData_ = function() {
       delete window.localStorage[Index.APPS[i] + j];
     }
   }
+
+  if('localStorage' in window && window['localStorage'] !== null)
+  {
+    var storageSupported = true;
+    var currentIndex = localStorage.getItem('currentIndex');
+    if(currentIndex !== null)
+    {
+      console.log('Index retrieved: ' + currentIndex.toString());
+      for(var i = 1; i<currentIndex; i++){
+        var index =  "timestamp"+i.toString();
+        localStorage.removeItem(index);
+      }
+      localStorage.setItem('currentIndex', 1);
+    }
+      
+    else
+    {
+      currentIndex = 1;
+      console.log('Index not found, initializing to 1');
+      localStorage.setItem('currentIndex', currentIndex);
+    }
+  }
+  else
+    alert("HTML5 Storage not supported in your browser, Semantic Interactions will not be saved!");
+
+
   location.reload();
 };
